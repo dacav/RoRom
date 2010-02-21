@@ -130,7 +130,7 @@ int transfer (nxt_link_t *nxt, unsigned char endp, int *transf,
 
 ssize_t nxt_send (nxt_link_t *nxt, const void *buffer, size_t len)
 {
-    ssize_t transf;
+    int transf;
     int err = transfer(nxt, TX_ENDPOINT, &transf, (void *)buffer, len);
 
     if (err != LIBUSB_SUCCESS) {
@@ -142,7 +142,7 @@ ssize_t nxt_send (nxt_link_t *nxt, const void *buffer, size_t len)
 
 ssize_t nxt_receive (nxt_link_t *nxt, void *buffer, size_t len)
 {
-    ssize_t transf;
+    int transf;
     int err = transfer(nxt, RX_ENDPOINT, &transf, buffer, len);
 
     if (err != LIBUSB_SUCCESS) {

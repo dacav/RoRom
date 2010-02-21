@@ -28,10 +28,10 @@
 #include <errno.h>
 #include <stdint.h>
 
-static const unsigned FLASH_START = 0x100000;
-static const unsigned FLASH_END   = 0x140000;
-static const unsigned RAM_START   = 0x200000;
-static const unsigned RAM_END     = 0x204000;
+static const uintmax_t FLASH_START = 0x100000;
+static const uintmax_t FLASH_END   = 0x140000;
+static const uintmax_t RAM_START   = 0x200000;
+static const uintmax_t RAM_END     = 0x204000;
 
 typedef struct {
     const char *nxos_filename;
@@ -120,14 +120,15 @@ void write_progheads (elf_t *nxos, FILE *ro_out, FILE *rw_out)
         vaddr = hdr->p_vaddr;
         printf("Segment:\n"
                "    Virtual address: %p\n"
-               "    Belongs to ", (void *)vaddr);
+               "    Belongs to ", (void *)(uintmax_t)vaddr);
         if (vaddr >= FLASH_START && vaddr < FLASH_END) {
             target = ro_out;
             if (flash_virtual == -1) {
                 flash_virtual = vaddr;
             }
             vaddr -= flash_virtual;
-            printf("FLASH (subtact %p, obtaining ", (void *)flash_virtual);
+            printf("FLASH (subtact %p, obtaining ",
+                   (void *)(uintmax_t)flash_virtual);
         } else if (vaddr >= RAM_START && vaddr < RAM_END) {
             target = rw_out;
             vaddr -= RAM_START;
@@ -135,10 +136,10 @@ void write_progheads (elf_t *nxos, FILE *ro_out, FILE *rw_out)
         } else {
             printf("...Nothing, i was joking\n");
             fprintf(stderr, "Unbound segment, virtual addr: %p\n",
-                    (void *)vaddr);
+                    (void *)(uintmax_t)vaddr);
             continue;
         }
-        printf("%p)\n", (void *)vaddr);
+        printf("%p)\n", (void *)(uintmax_t)vaddr);
 
         // Position file descriptor;
         fseek(target, vaddr, SEEK_SET);
@@ -146,13 +147,13 @@ void write_progheads (elf_t *nxos, FILE *ro_out, FILE *rw_out)
         // Stored part of the binary image
         size_t size = hdr->p_filesz;
         if (size > 0) {
-            printf("    Writing %d bytes\n", size);
+            printf("    Writing %d bytes\n", (int)size);
             fwrite(nxos->file.data8b + hdr->p_offset, size, 1, target);
         }
 
         // The remaining part of memsz must be zeroed
         size = hdr->p_memsz < size ? hdr->p_memsz - size : 0;
-        printf("    Filling with zero %d bytes\n", size);
+        printf("    Filling with zero %d bytes\n", (int)size);
         while (size --) fputc(0, target);
     }
     

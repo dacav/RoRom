@@ -25,6 +25,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <stdint.h>
 
 #include "nxt.h"
 
@@ -60,7 +61,7 @@ void display_percentage (ssize_t total, tx_data_t *tx)
 
     percentage = (float)(total - tx->length) / total;
     fprintf(stdout, "Position: %8p %6.2f%% |",
-            (void *)tx->start_address, 100 * percentage);
+            (void *)(uintmax_t)tx->start_address, 100 * percentage);
     for (col = 0; col < COLS_NUMBER * percentage; col ++) {
         fprintf(stdout, "=");
     }
@@ -108,8 +109,8 @@ int main (int argc, char **argv)
     fprintf(stdout, "Sync sent: %d bytes\n"
                     "           start=%p\n"
                     "           length=%d\n",
-            nxt_send(&nxt, (void *)&data, sizeof(tx_data_t)),
-            (void *)data.start_address,
+            (int)nxt_send(&nxt, (void *)&data, sizeof(tx_data_t)),
+            (void *)(uintmax_t)data.start_address,
             data.length);
 
     while ((read = fread((void *)buffer, 1, USB_BUFSIZE, ro_data)) > 0) {
